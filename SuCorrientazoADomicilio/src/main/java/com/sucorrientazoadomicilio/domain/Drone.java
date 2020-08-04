@@ -27,12 +27,10 @@ public class Drone {
 	public synchronized void sendDelivery() {
 
 		List<Address> addressList = getDelivery().getAddressList();
-	
+
 		for (Address address : addressList) {
 			List<Movements> movementsList = address.getMovementsList();
 			iterateOverMovements(movementsList);
-			System.out.println("final position " + getPosition().getX() + " " + getPosition().getY() + " "
-					+ getPosition().getCardinalPoint());
 			createDeliveryReport(getDelivery());
 		}
 	}
@@ -53,7 +51,7 @@ public class Drone {
 		}
 	}
 
-	private  synchronized void adjustPosition(Movements movement) {
+	private synchronized void adjustPosition(Movements movement) {
 		switch (movement.getDescription()) {
 		case "A":
 			if (getPosition().getCardinalPoint().getValue().equals("N")) {

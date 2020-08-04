@@ -64,7 +64,7 @@ public class SuCoorientazoADomiciolio {
 			char[] letters = address.toCharArray();
 			List<Movements> movementList = new ArrayList<>();
 			Address addressObject = buildAddressObject(letters, movementList);
-			System.out.println("finish one direction");
+			LOGGER.info(String.format("finish delivery for one direction"));
 			addressListResult.add(addressObject);
 		}
 		return addressListResult;
@@ -74,7 +74,6 @@ public class SuCoorientazoADomiciolio {
 		Address address = new Address();
 		for (char letter : letters) {
 			addMomentsToList(movementList, letter);
-			System.out.println(letter);
 		}
 		address.setMovementsList(movementList);
 		return address;
