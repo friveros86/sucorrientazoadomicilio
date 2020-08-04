@@ -8,13 +8,9 @@ public class Position {
 
 	public Position() {
 		super();
-	}
-
-	public Position(int x, int y, CardinalPonits cardinalPoint) {
-		super();
 		this.x = 0;
 		this.y = 0;
-		this.cardinalPoint = cardinalPoint;
+		this.cardinalPoint = CardinalPonits.NORTH;
 	}
 
 	public int getX() {

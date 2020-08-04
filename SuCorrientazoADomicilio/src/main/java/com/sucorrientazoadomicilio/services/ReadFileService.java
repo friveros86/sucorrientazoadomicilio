@@ -1,4 +1,4 @@
-package com.sucorrientazoadomicilio;
+package com.sucorrientazoadomicilio.services;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,12 +13,12 @@ import java.util.stream.Stream;
 
 public class ReadFileService {
 
-	private static final String FOLDER_PATH = "src/main/resources";
+	private static final String FOLDER_PATH = "src/main/resources/in";
 
 	public List<File> readFiles() {
 		final File folder = new File(FOLDER_PATH);
 		final List<File> fileList = Arrays.asList(folder.listFiles());
-		return fileList;
+		return fileList.parallelStream().filter(file -> file.isFile()).collect(Collectors.toList());
 	}
 
 	public String readLines(File file) throws URISyntaxException, IOException {

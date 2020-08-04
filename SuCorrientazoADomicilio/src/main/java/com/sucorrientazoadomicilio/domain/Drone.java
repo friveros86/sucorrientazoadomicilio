@@ -1,32 +1,59 @@
 package com.sucorrientazoadomicilio.domain;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import com.sucorrientazoadomicilio.services.WriteFileService;
 
 public class Drone {
 
 	private Position position;
 	private Delivery delivery;
+	private WriteFileService writeFileService;
 
-	public void sendDelivery() {
-
-		List<Address> addressList = getDelivery().getAddressList();
-		iterateOverAddresses(addressList);
+	public Drone() {
+		super();
+		this.position = new Position();
+		this.delivery = new Delivery(new ArrayList<Address>(), "");
+		this.writeFileService = new WriteFileService();
 	}
 
-	private void iterateOverAddresses(List<Address> addressList) {
+	public Drone(Position position, Delivery delivery) {
+		super();
+		this.position = position;
+		this.delivery = delivery;
+	}
+
+	public synchronized void sendDelivery() {
+
+		List<Address> addressList = getDelivery().getAddressList();
+	
 		for (Address address : addressList) {
 			List<Movements> movementsList = address.getMovementsList();
 			iterateOverMovements(movementsList);
+			System.out.println("final position " + getPosition().getX() + " " + getPosition().getY() + " "
+					+ getPosition().getCardinalPoint());
+			createDeliveryReport(getDelivery());
 		}
 	}
 
-	private void iterateOverMovements(List<Movements> movementsList) {
+	private void createDeliveryReport(Delivery delivery) {
+		StringBuilder line = new StringBuilder("(");
+		line.append(getPosition().getX());
+		line.append(",");
+		line.append(getPosition().getY());
+		line.append(")");
+		line.append(getPosition().getCardinalPoint());
+		writeFileService.writeReportFile(line.toString(), delivery.getFilename());
+	}
+
+	private synchronized void iterateOverMovements(List<Movements> movementsList) {
 		for (Movements movement : movementsList) {
 			adjustPosition(movement);
 		}
 	}
 
-	private void adjustPosition(Movements movement) {
+	private  synchronized void adjustPosition(Movements movement) {
 		switch (movement.getDescription()) {
 		case "A":
 			if (getPosition().getCardinalPoint().getValue().equals("N")) {
@@ -60,11 +87,11 @@ public class Drone {
 			if (getPosition().getCardinalPoint().getValue().equals("N")) {
 				getPosition().setCardinalPoint(CardinalPonits.WEST);
 			} else if (getPosition().getCardinalPoint().getValue().equals("E")) {
-				getPosition().setCardinalPoint(CardinalPonits.SOUTH);
+				getPosition().setCardinalPoint(CardinalPonits.NORTH);
 			} else if (getPosition().getCardinalPoint().getValue().equals("S")) {
 				getPosition().setCardinalPoint(CardinalPonits.EAST);
 			} else if (getPosition().getCardinalPoint().getValue().equals("W")) {
-				getPosition().setCardinalPoint(CardinalPonits.NORTH);
+				getPosition().setCardinalPoint(CardinalPonits.SOUTH);
 			}
 
 			break;

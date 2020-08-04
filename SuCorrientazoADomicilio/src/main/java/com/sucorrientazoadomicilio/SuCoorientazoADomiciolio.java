@@ -6,33 +6,55 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.logging.Logger;
 import com.sucorrientazoadomicilio.domain.Address;
 import com.sucorrientazoadomicilio.domain.Delivery;
 import com.sucorrientazoadomicilio.domain.Drone;
 import com.sucorrientazoadomicilio.domain.Movements;
+import com.sucorrientazoadomicilio.services.ReadFileService;
 
 public class SuCoorientazoADomiciolio {
 
-	public static void main(String[] args) {
+	private static List<Drone> dronesList = new ArrayList<>();
+	private static int droneLimit = 20;
+	private static AtomicInteger droneAmount = new AtomicInteger(0);
 
+	private static final Logger LOGGER = Logger.getLogger(SuCoorientazoADomiciolio.class.getClass().getName());
+
+	public static void main(String[] args) {
+		LOGGER.info("delivery proccess has started");
 		ReadFileService readFileService = new ReadFileService();
-		Drone drone = new Drone();
 		List<File> fileList = readFileService.readFiles();
-		for (File file : fileList) {
-			sendLunchs(readFileService, drone, file);
+		fileList.parallelStream().forEach(file -> sendLunches(readFileService, file));
+		dronesList.parallelStream().forEach(drone -> drone.sendDelivery());
+	}
+
+	private static synchronized void addNewDrone(Drone drone) {
+
+		if (droneAmount.get() < droneLimit) {
+			dronesList.add(drone);
+			droneAmount.set(droneAmount.get()+1);
+			
+		}else {
+			LOGGER.info("there aren't avaliables drones");	
 		}
 	}
 
-	private static void sendLunchs(ReadFileService readFileService, Drone dron, File file) {
+
+	private static synchronized void sendLunches(ReadFileService readFileService, File file) {
 		try {
 			String addresInStringFotmat = readFileService.readLines(file);
 			List<String> addresList = Arrays.asList(addresInStringFotmat.split(System.getProperty("line.separator")));
 			List<Address> addressObjectList = iterateOverAddressCharacterByCharracter(addresList);
-			Delivery delivery = new Delivery(addressObjectList);
-			dron.setDelivery(delivery);
-			dron.sendDelivery();
+			Delivery delivery = new Delivery(addressObjectList, file.getName());
+			Drone drone = new Drone();
+			drone.setDelivery(delivery);
+			addNewDrone(drone);
+			
 		} catch (URISyntaxException | IOException e) {
-			e.printStackTrace();
+			LOGGER.info(String.format("error in sendlunch method {}", e.getMessage()));
+			;
 		}
 	}
 
@@ -67,7 +89,7 @@ public class SuCoorientazoADomiciolio {
 			movementList.add(Movements.D);
 			break;
 		case 'I':
-			movementList.add(Movements.D);
+			movementList.add(Movements.I);
 			break;
 		}
 	}
